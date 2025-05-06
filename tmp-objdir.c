@@ -17,7 +17,7 @@ struct tmp_objdir {
 	struct repository *repo;
 	struct strbuf path;
 	struct strvec env;
-	struct object_directory *prev_odb;
+	struct odb_backend *prev_odb;
 	int will_destroy;
 };
 
@@ -277,7 +277,7 @@ int tmp_objdir_migrate(struct tmp_objdir *t)
 		return 0;
 
 	if (t->prev_odb) {
-		if (t->repo->objects->odb->will_destroy)
+		if (t->repo->objects->backends->will_destroy)
 			BUG("migrating an ODB that was marked for destruction");
 		restore_primary_odb(t->prev_odb, t->path.buf);
 		t->prev_odb = NULL;

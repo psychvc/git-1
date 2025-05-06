@@ -59,7 +59,7 @@ static void dir_file_stats_objects(const char *full_path,
 			    (uintmax_t)st.st_size);
 }
 
-static int dir_file_stats(struct object_directory *object_dir, void *data)
+static int dir_file_stats(struct odb_backend *object_dir, void *data)
 {
 	struct strbuf *buf = data;
 
@@ -228,7 +228,7 @@ int create_diagnostics_archive(struct repository *r,
 
 	strbuf_reset(&buf);
 	strbuf_addstr(&buf, "--add-virtual-file=packs-local.txt:");
-	dir_file_stats(r->objects->odb, &buf);
+	dir_file_stats(r->objects->backends, &buf);
 	foreach_alt_odb(dir_file_stats, &buf);
 	strvec_push(&archiver_args, buf.buf);
 
