@@ -505,7 +505,8 @@ static int grep_submodule(struct grep_opt *opt,
 	 * lazily registered as alternates when needed (and except in an
 	 * unexpected code interaction, it won't be needed).
 	 */
-	add_submodule_odb_by_path(subrepo->objects->backends->path);
+	odb_add_submodule_backend_by_path(the_repository->objects,
+					  subrepo->objects->backends->path);
 	obj_read_unlock();
 
 	memcpy(&subopt, opt, sizeof(subopt));
