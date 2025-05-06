@@ -61,17 +61,6 @@ struct odb_backend {
 	char *path;
 };
 
-/*
- * Replace the current writable object directory with the specified temporary
- * object directory; returns the former primary object directory.
- */
-struct odb_backend *set_temporary_primary_odb(const char *dir, int will_destroy);
-
-/*
- * Restore a previous ODB replaced by set_temporary_main_odb.
- */
-void restore_primary_odb(struct odb_backend *restore_odb, const char *old_path);
-
 struct packed_git;
 struct multi_pack_index;
 struct cached_object_entry;
@@ -174,6 +163,20 @@ void odb_clear(struct object_database *o);
  * couldn't be found.
  */
 struct odb_backend *odb_find_backend(struct object_database *odb, const char *obj_dir);
+
+/*
+ * Replace the current writable object directory with the specified temporary
+ * object directory; returns the former primary backend.
+ */
+struct odb_backend *odb_set_temporary_primary_backend(struct object_database *odb,
+						      const char *dir, int will_destroy);
+
+/*
+ * Restore a previous bakcend replaced by `odb_set_temporary_primary_backend()`.
+ */
+void odb_restore_primary_backend(struct object_database *odb,
+				 struct odb_backend *restore_odb,
+				 const char *old_path);
 
 /*
  * Iterate through all backends of the database and execute the provided

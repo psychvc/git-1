@@ -329,7 +329,8 @@ void odb_add_to_alternates_memory(struct object_database *odb,
 			     '\n', NULL, 0);
 }
 
-struct odb_backend *set_temporary_primary_odb(const char *dir, int will_destroy)
+struct odb_backend *odb_set_temporary_primary_backend(struct object_database *odb,
+						      const char *dir, int will_destroy)
 {
 	struct odb_backend *backend;
 
@@ -337,14 +338,14 @@ struct odb_backend *set_temporary_primary_odb(const char *dir, int will_destroy)
 	 * Make sure alternates are initialized, or else our entry may be
 	 * overwritten when they are.
 	 */
-	odb_prepare_alternates(the_repository->objects);
+	odb_prepare_alternates(odb);
 
 	/*
 	 * Make a new primary odb and link the old primary ODB in as an
 	 * alternate
 	 */
 	backend = xcalloc(1, sizeof(*backend));
-	backend->odb = the_repository->objects;
+	backend->odb = odb;
 	backend->path = xstrdup(dir);
 
 	/*
@@ -353,8 +354,8 @@ struct odb_backend *set_temporary_primary_odb(const char *dir, int will_destroy)
 	 */
 	backend->disable_ref_updates = 1;
 	backend->will_destroy = will_destroy;
-	backend->next = the_repository->objects->backends;
-	the_repository->objects->backends = backend;
+	backend->next = odb->backends;
+	odb->backends = backend;
 	return backend->next;
 }
 
@@ -366,9 +367,11 @@ static void free_object_directory(struct odb_backend *odb)
 	free(odb);
 }
 
-void restore_primary_odb(struct odb_backend *restore_odb, const char *old_path)
+void odb_restore_primary_backend(struct object_database *odb,
+				 struct odb_backend *restore_odb,
+				 const char *old_path)
 {
-	struct odb_backend *cur_odb = the_repository->objects->backends;
+	struct odb_backend *cur_odb = odb->backends;
 
 	if (strcmp(old_path, cur_odb->path))
 		BUG("expected %s as primary object store; found %s",
@@ -377,7 +380,7 @@ void restore_primary_odb(struct odb_backend *restore_odb, const char *old_path)
 	if (cur_odb->next != restore_odb)
 		BUG("we expect the old primary object store to be the first alternate");
 
-	the_repository->objects->backends = restore_odb;
+	odb->backends = restore_odb;
 	free_object_directory(cur_odb);
 }
 
