@@ -448,15 +448,15 @@ out:
 	return ref_git;
 }
 
-struct odb_backend *find_odb(struct repository *r, const char *obj_dir)
+struct odb_backend *odb_find_backend(struct object_database *odb, const char *obj_dir)
 {
-	struct odb_backend *odb;
+	struct odb_backend *backend;
 	char *obj_dir_real = real_pathdup(obj_dir, 1);
 	struct strbuf odb_path_real = STRBUF_INIT;
 
-	prepare_alt_odb(r);
-	for (odb = r->objects->backends; odb; odb = odb->next) {
-		strbuf_realpath(&odb_path_real, odb->path, 1);
+	prepare_alt_odb(odb->repo);
+	for (backend = odb->backends; backend; backend = backend->next) {
+		strbuf_realpath(&odb_path_real, backend->path, 1);
 		if (!strcmp(obj_dir_real, odb_path_real.buf))
 			break;
 	}
@@ -464,9 +464,9 @@ struct odb_backend *find_odb(struct repository *r, const char *obj_dir)
 	free(obj_dir_real);
 	strbuf_release(&odb_path_real);
 
-	if (!odb)
+	if (!backend)
 		die(_("could not find object directory matching %s"), obj_dir);
-	return odb;
+	return backend;
 }
 
 static void fill_alternate_refs_command(struct child_process *cmd,
