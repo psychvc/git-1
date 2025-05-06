@@ -1023,7 +1023,7 @@ static void prepare_packed_git(struct repository *r)
 	if (r->objects->packed_git_initialized)
 		return;
 
-	prepare_alt_odb(r);
+	odb_prepare_alternates(r->objects);
 	for (backend = r->objects->backends; backend; backend = backend->next) {
 		int local = (backend == r->objects->backends);
 		prepare_multi_pack_index_one(r, backend->path, local);
@@ -1048,7 +1048,7 @@ void reprepare_packed_git(struct repository *r)
 	 * the lifetime of the process.
 	 */
 	r->objects->loaded_alternates = 0;
-	prepare_alt_odb(r);
+	odb_prepare_alternates(r->objects);
 
 	for (backend = r->objects->backends; backend; backend = backend->next)
 		odb_clear_loose_cache(backend);
